@@ -3,3 +3,7 @@
 *.bat text eol=crlf
 *.cmd text eol=crlf
 *.png binary
+
+# İndirilen ZIP'lere (sürüm paketi, "Download ZIP") ekran görüntüleri girmesin
+docs/ export-ignore
+.gitattributes export-ignore

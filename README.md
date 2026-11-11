@@ -4,7 +4,35 @@ Tamamen yerel çalışan, **ücretsiz ve açık kaynak** bir Windows ağ yöneti
 
 Hesap, abonelik, reklam veya telemetri yoktur; verileriniz bilgisayarınızdan çıkmaz.
 
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="Network Magic genel bakış ekranı: internet, modem ve bilgisayar durum şeridi ile ağdaki cihazları gösteren canlı radar" width="100%">
+</p>
+
+## Hızlı başlangıç
+
+1. **[Network Magic'i indirin (ZIP)](https://github.com/herranova/network-magic/releases/latest/download/NetworkMagic.zip)** ve bir klasöre çıkarın.
+2. **`Kur.cmd`** dosyasına çift tıklayın.
+
+`Kur.cmd` Python 3.10+ yoksa `winget` ile kurar, proje klasöründe yalıtılmış bir Python ortamı (`.venv`) oluşturur, gerekli paketleri yükler ve uygulamayı tarayıcıda açar. Sonraki açılışlarda `run.bat` yeterlidir. Windows 10/11 gerekir.
+
 > Network Magic'i yalnızca kendi ağınızda veya yönetmeye yetkili olduğunuz ağlarda kullanın. Uygulama ağdaki cihazlara ping atar ve yaygın portları yoklar.
+
+## Ekran görüntüleri
+
+| Ağ haritası | Sorun nerede? Modem mi, servis sağlayıcı mı? |
+| :---: | :---: |
+| [<img src="docs/screenshots/map.png" alt="İnternet, modem ve ağdaki 14 cihazı gösteren etkileşimli ağ haritası">](docs/screenshots/map.png) | [<img src="docs/screenshots/internet.png" alt="Hız testi, Wi-Fi ağları, modem ve internet gecikme grafiği ile kesinti geçmişi">](docs/screenshots/internet.png) |
+| **Cihazlar** | **Ebeveyn kontrolü — haftalık plan** |
+| [<img src="docs/screenshots/devices.png" alt="IP, MAC, tür ve güven durumuyla cihaz listesi">](docs/screenshots/devices.png) | [<img src="docs/screenshots/parental.png" alt="Bir tablet için saat saat haftalık erişim planı">](docs/screenshots/parental.png) |
+
+<p align="center">
+  <img src="docs/screenshots/mobile-dashboard.png" alt="Telefonda genel bakış ekranı" width="260">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/mobile-map.png" alt="Telefonda dikey ağ haritası" width="260">
+  <br><sub>Telefondan da kullanılabilir: aynı ağdaysanız tarayıcıda açın, isterseniz ana ekrana ekleyin.</sub>
+</p>
+
+<sub>Ekran görüntüleri uydurma bir demo ağla alınmıştır; cihaz adları ve adresler gerçek değildir.</sub>
 
 ## Özellikler
 
@@ -49,12 +77,7 @@ qrcode
 
 ## Kurulum ve çalıştırma
 
-### Kolay yol
-
-1. Bu sayfada **Code → Download ZIP** ile projeyi indirin ve bir klasöre çıkarın.
-2. **`Kur.cmd`** dosyasına çift tıklayın.
-
-`Kur.cmd` Python 3.10+ yoksa `winget` ile kurar, proje klasöründe yalıtılmış bir Python ortamı (`.venv`) oluşturur, gerekli paketleri yükler ve uygulamayı başlatır. Sonraki açılışlarda `run.bat` yeterlidir.
+En kolay yol için yukarıdaki [Hızlı başlangıç](#hızlı-başlangıç) adımlarını izleyin.
 
 ### Elle kurulum
 
@@ -167,6 +190,7 @@ network-magic/
 │  ├─ js/app.js
 │  └─ img/favicon.svg
 ├─ tests/test_core.py
+├─ docs/                  # README ekran görüntüleri ve paylaşım görseli
 └─ data/                  # İlk çalıştırmada oluşur: veritabanı, paylaşılan dosyalar, OUI (depoya girmez)
 ```
 

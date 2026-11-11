@@ -36,7 +36,7 @@ const PAGE_META = {
   devices: ["Cihazlar", "Ağınızdaki tüm cihazlar"],
   internet: ["İnternet & Hız", "Bağlantı kalitesi ve onarım"],
   share: ["Paylaşım", "Dosya ve misafir paylaşımı"],
-  parental: ["Ebeveyn Kontrolü", "İnternet erişim planları"],
+  parental: ["Ebeveyn Kontrolü", "Yerel erişim planları"],
   alerts: ["Güvenlik & Uyarılar", "Ağ olayları"],
   settings: ["Ayarlar", "Network Magic yapılandırması"],
 };
@@ -1235,82 +1235,28 @@ function computeLayout(count, cx, cy) {
     positions.push({ x: cx + 220, y: cy + 185, tier: 1 });
     return positions;
   }
-  if (count <= 5) {
-    const rx = 300, ry = 225;
-    const span = Math.PI * 0.72;
-    const start = Math.PI * 0.5 - span / 2;
-    for (let i = 0; i < count; i++) {
-      const ang = start + (span * i) / (count - 1);
-      positions.push({
-        x: cx + Math.cos(ang) * rx,
-        y: cy + Math.sin(ang) * ry,
-        tier: 1,
-      });
+  // 4+ cihaz: hafif kavisli sıralar. Bir düğüm (simge + 140 px etiket kartı) yaklaşık
+  // 140x106 px yer kaplar; yatay aralık >= 160, dikey aralık 125 olduğu için kartlar
+  // hiçbir cihaz sayısında üst üste binmez.
+  const usable = cx * 2 - 160;              // kenarlarda 80 px boşluk
+  const maxPerRow = Math.floor(usable / 160) + 1;
+  const rows = Math.ceil(count / maxPerRow);
+  const perRow = Math.ceil(count / rows);
+  const firstRowY = cy + 165;               // modem kartının (cy + 86) altında
+  const rowGap = 125;
+  const sag = 22;                           // ortadaki düğümler biraz aşağıda: yay görünümü
+  let index = 0;
+  for (let r = 0; r < rows; r++) {
+    const inRow = Math.min(perRow, count - index);
+    const gap = inRow > 1 ? Math.min(210, usable / (inRow - 1)) : 0;
+    const left = cx - (gap * (inRow - 1)) / 2;
+    for (let i = 0; i < inRow; i++, index++) {
+      const x = left + gap * i;
+      // Kavis x'e bağlı (satıra değil): aynı sütundaki düğümler arası dikey mesafe sabit kalır
+      const t = (x - cx) / cx;
+      positions.push({ x, y: firstRowY + r * rowGap + sag * (1 - t * t) });
     }
-    return positions;
   }
-  if (count <= 12) {
-    // İki dengeli ve aralıklı (interleaved) kademe
-    const n1 = count <= 7 ? 3 : (count <= 9 ? 4 : 5);
-    const n2 = count - n1;
-    const r1_x = 250, r1_y = 205;
-    const r2_x = 440, r2_y = 365;
-
-    // Kademe 1
-    const span1 = Math.PI * 0.58;
-    const start1 = Math.PI * 0.5 - span1 / 2;
-    for (let i = 0; i < n1; i++) {
-      const ang = start1 + (span1 * i) / (n1 - 1);
-      positions.push({
-        x: cx + Math.cos(ang) * r1_x,
-        y: cy + Math.sin(ang) * r1_y,
-        tier: 1,
-      });
-    }
-
-    // Kademe 2 - boşluklara denk gelen açılar
-    const span2 = Math.PI * 0.86;
-    const start2 = Math.PI * 0.5 - span2 / 2;
-    for (let j = 0; j < n2; j++) {
-      const ang = start2 + (span2 * j) / (n2 - 1);
-      positions.push({
-        x: cx + Math.cos(ang) * r2_x,
-        y: cy + Math.sin(ang) * r2_y,
-        tier: 2,
-      });
-    }
-    return positions;
-  }
-
-  // 13+ cihaz: Üç kademeli dağılım
-  const n1 = 4;
-  const n2 = Math.min(7, Math.ceil((count - n1) * 0.5));
-  const n3 = count - n1 - n2;
-  const r1_x = 220, r1_y = 175;
-  const r2_x = 355, r2_y = 295;
-  const r3_x = 475, r3_y = 415;
-
-  const span1 = Math.PI * 0.55;
-  const start1 = Math.PI * 0.5 - span1 / 2;
-  for (let i = 0; i < n1; i++) {
-    const ang = start1 + (span1 * i) / (n1 - 1);
-    positions.push({ x: cx + Math.cos(ang) * r1_x, y: cy + Math.sin(ang) * r1_y, tier: 1 });
-  }
-
-  const span2 = Math.PI * 0.72;
-  const start2 = Math.PI * 0.5 - span2 / 2;
-  for (let j = 0; j < n2; j++) {
-    const ang = start2 + (span2 * j) / (n2 - 1);
-    positions.push({ x: cx + Math.cos(ang) * r2_x, y: cy + Math.sin(ang) * r2_y, tier: 2 });
-  }
-
-  const span3 = Math.PI * 0.88;
-  const start3 = Math.PI * 0.5 - span3 / 2;
-  for (let k = 0; k < n3; k++) {
-    const ang = start3 + (span3 * k) / (n3 - 1);
-    positions.push({ x: cx + Math.cos(ang) * r3_x, y: cy + Math.sin(ang) * r3_y, tier: 3 });
-  }
-
   return positions;
 }
 
@@ -1359,9 +1305,10 @@ function renderMap() {
   const positions = compact
     ? computeCompactLayout(visibleNodes.length, cx, rY)
     : computeLayout(visibleNodes.length, cx, rY);
+  const lowest = positions.length ? Math.max(...positions.map((p) => p.y)) : 0;
   const H = compact
-    ? (positions.length ? Math.max(...positions.map((p) => p.y)) + 95 : 520)
-    : 680;
+    ? (positions.length ? lowest + 95 : 520)
+    : Math.max(680, lowest + 100);         // çok cihazlı ağlarda harita aşağı doğru uzar
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   svg.style.aspectRatio = compact ? `${W} / ${H}` : "";
   state.mapCenter = { x: W / 2, y: H / 2 };
