@@ -1,0 +1,191 @@
+"""Network Magic - sabitler ve yapılandırma."""
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+APP_NAME = "Network Magic"
+APP_VERSION = "1.3.2"
+APP_TAGLINE = "Ağınızın büyüsü"
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR = Path(os.environ.get("NETMAGIC_DATA", BASE_DIR / "data"))
+SHARE_DIR = DATA_DIR / "share"
+DB_PATH = DATA_DIR / "netmagic.db"
+OUI_FILES = [DATA_DIR / "manuf", DATA_DIR / "oui.csv"]
+
+DEFAULT_PORT = int(os.environ.get("NETMAGIC_PORT", "8765"))
+HOST = os.environ.get("NETMAGIC_HOST", "0.0.0.0")
+
+# Cihaz türleri (arayüzde ikon ve etiket olarak kullanılır)
+DEVICE_TYPES = {
+    "router": "Yönlendirici",
+    "computer": "Bilgisayar",
+    "laptop": "Dizüstü",
+    "phone": "Telefon",
+    "tablet": "Tablet",
+    "tv": "Televizyon",
+    "console": "Oyun Konsolu",
+    "printer": "Yazıcı",
+    "nas": "NAS / Sunucu",
+    "camera": "Kamera",
+    "speaker": "Akıllı Hoparlör",
+    "iot": "Akıllı Ev Cihazı",
+    "unknown": "Bilinmeyen",
+}
+
+# Port taramasında bakılan yaygın portlar ve anlamları
+COMMON_PORTS = {
+    22: "SSH",
+    23: "Telnet",
+    53: "DNS",
+    80: "HTTP",
+    81: "HTTP (alternatif)",
+    139: "NetBIOS",
+    443: "HTTPS",
+    445: "SMB / Dosya paylaşımı",
+    515: "Yazıcı (LPD)",
+    548: "AFP / Apple dosya paylaşımı",
+    554: "RTSP (kamera)",
+    631: "Yazıcı (IPP)",
+    1900: "UPnP",
+    3389: "Uzak Masaüstü (RDP)",
+    5000: "NAS (Synology)",
+    5001: "NAS (Synology SSL)",
+    7000: "AirPlay",
+    8008: "Chromecast",
+    8009: "Chromecast",
+    8080: "HTTP (alternatif)",
+    8443: "HTTPS (alternatif)",
+    8554: "Kamera (RTSP)",
+    9100: "Yazıcı (JetDirect)",
+    32400: "Plex",
+    49152: "UPnP",
+    62078: "iPhone eşitleme",
+}
+
+# mDNS ile sorgulanan servisler
+MDNS_SERVICES = [
+    "_services._dns-sd._udp.local",
+    "_http._tcp.local",
+    "_https._tcp.local",
+    "_ipp._tcp.local",
+    "_printer._tcp.local",
+    "_airplay._tcp.local",
+    "_raop._tcp.local",
+    "_googlecast._tcp.local",
+    "_ssh._tcp.local",
+    "_smb._tcp.local",
+    "_workstation._tcp.local",
+    "_device-info._tcp.local",
+    "_companion-link._tcp.local",
+    "_spotify-connect._tcp.local",
+]
+
+DEFAULT_SETTINGS = {
+    "scan_interval_minutes": "10",
+    "auto_scan": "1",
+    "subnet_override": "",
+    "notify_new": "1",
+    "onboarded": "0",
+    "baseline_done": "0",
+    "guest_enabled": "0",
+    "guest_token": "",
+    "guest_expires": "",
+    "device_name": os.environ.get("COMPUTERNAME", "Bu Bilgisayar"),
+    "theme": "dark",
+    "allow_lan_control": "0",
+}
+
+# Yaygın üreticiler - manuf dosyası yoksa yedek olarak kullanılır
+FALLBACK_OUI = {
+    "000000": "Xerox", "00000C": "Cisco", "0001E6": "Hewlett-Packard",
+    "0004EA": "Hewlett-Packard", "0007E9": "Intel", "000A27": "Apple",
+    "000D93": "Apple", "000E35": "Intel", "000F66": "Cisco-Linksys",
+    "0011D8": "Asus", "0013A9": "Sony", "0014A4": "Hon Hai / Foxconn",
+    "0016CB": "Apple", "0017A4": "Hewlett-Packard", "0018E7": "Fenwal",
+    "0019E3": "Apple", "001B63": "Apple", "001E52": "Apple",
+    "001F5B": "Apple", "0021E9": "Apple", "00236C": "Apple",
+    "0024D7": "Intel", "0025BC": "Apple", "0026B0": "Apple",
+    "0026BB": "Apple", "00306E": "Hewlett-Packard", "005056": "VMware",
+    "0050F2": "Microsoft", "0050C2": "IEEE", "00A0C9": "Intel",
+    "00C0CA": "Apple", "00E04C": "Realtek", "00E0FC": "Huawei",
+    "00FEC8": "Cisco", "041E64": "Apple", "04CF8C": "Xiaomi",
+    "04D9F5": "Asus", "08606E": "Asus", "08CC68": "Cisco",
+    "0C4DE9": "Apple", "0C8268": "Tp-Link", "0C8910": "Samsung",
+    "0CD502": "Samsung", "101F74": "Hewlett-Packard", "104A7D": "Intel",
+    "10C37B": "Asus", "14109F": "Apple", "14CC20": "Tp-Link",
+    "186472": "Apple", "18B430": "Nest Labs", "1C1AC0": "Apple",
+    "1C5CF2": "Apple", "1C7B21": "Sony", "1C9E46": "Apple",
+    "200DB0": "Sony", "20C9D0": "Apple", "240AC4": "Espressif",
+    "24418C": "Intel", "24C013": "Tp-Link", "24F5A2": "Apple",
+    "28CFE9": "Apple", "2C3361": "Apple", "2C54CF": "Apple",
+    "2CBE08": "Apple", "2CFDA1": "Asus", "30B5C2": "Tp-Link",
+    "341298": "Apple", "34C9F0": "Tp-Link", "34E894": "Tp-Link",
+    "3822E2": "Samsung", "3880DF": "Apple", "3C2EFF": "Apple",
+    "3C5A37": "Samsung", "3C7C3F": "Apple", "3CA308": "Tp-Link",
+    "3CE072": "Apple", "40A6D9": "Apple", "40B395": "Apple",
+    "44237C": "Apple", "44D884": "Apple", "44E4D9": "Cisco",
+    "48437C": "Apple", "48A195": "Apple", "48D705": "Apple",
+    "4C57CA": "Apple", "4C7C5F": "Apple", "4CB199": "Apple",
+    "503EAA": "Tp-Link", "50C7BF": "Tp-Link", "50F0D3": "Samsung",
+    "54E43A": "Apple", "581F28": "Samsung", "5855CA": "Apple",
+    "58B035": "Apple", "5C514F": "Intel", "5C969D": "Apple",
+    "5CF938": "Apple", "60A4D0": "Samsung", "60FACD": "Apple",
+    "60FB42": "Apple", "64B9E8": "Apple", "64C753": "Apple",
+    "6805CA": "Intel", "682F67": "Apple", "68A86D": "Apple",
+    "68AB1E": "Apple", "6C40C6": "Cisco", "6C709F": "Apple",
+    "6C8DC1": "Apple", "6CB311": "Sony", "700B4F": "Apple",
+    "70105C": "Cisco", "70480F": "Apple", "7073CB": "Apple",
+    "70A2B3": "Apple", "70DEE2": "Apple", "741BB2": "Apple",
+    "747D24": "Apple", "74E2F5": "Apple", "74E6E2": "Apple",
+    "7831C1": "Apple", "787B8A": "Apple", "78CA39": "Apple",
+    "78D75F": "Apple", "7C04D0": "Apple", "7C6D62": "Apple",
+    "7CC3A1": "Apple", "7CD1C3": "Apple", "800C67": "Apple",
+    "804971": "Apple", "80BE05": "Apple", "80E650": "Apple",
+    "841B77": "Intel", "84FCFE": "Apple", "88308A": "Apple",
+    "885395": "Apple", "88C663": "Apple", "88E87F": "Apple",
+    "8C2937": "Apple", "8C8590": "Apple", "8CFABA": "Apple",
+    "9027E4": "Apple", "9060F1": "Apple", "90840D": "Apple",
+    "90B21F": "Apple", "90C1C6": "Apple", "90FD61": "Apple",
+    "94E96A": "Apple", "9803D8": "Apple", "985AEB": "Apple",
+    "98B8E9": "Apple", "98D6BB": "Apple", "98FE94": "Apple",
+    "9C04EB": "Apple", "9C207B": "Apple", "9C4FDA": "Apple",
+    "9C8BA0": "Apple", "A01828": "Apple", "A0999B": "Apple",
+    "A0D795": "Apple", "A45E60": "Apple", "A46706": "Apple",
+    "A4B197": "Apple", "A4C361": "Apple", "A4D18C": "Apple",
+    "A82066": "Apple", "A8667F": "Apple", "A886DD": "Apple",
+    "A8BB50": "Xiaomi", "A8FAD8": "Apple", "AC293A": "Apple",
+    "AC61EA": "Apple", "AC7F3E": "Apple", "ACBC32": "Apple",
+    "ACCF5C": "Apple", "ACE4B5": "Apple", "B065BD": "Apple",
+    "B0BE76": "Tp-Link", "B0C4E7": "Samsung", "B418D1": "Apple",
+    "B44BD2": "Apple", "B4F0AB": "Apple", "B8098A": "Apple",
+    "B817C2": "Apple", "B8C75D": "Apple", "B8E856": "Apple",
+    "B8F6B1": "Apple", "BC3BAF": "Apple", "BC4CC4": "Apple",
+    "BC52B7": "Apple", "BC6778": "Apple", "BC926B": "Apple",
+    "BCA920": "Apple", "BCE143": "Apple", "C01ADA": "Apple",
+    "C06394": "Apple", "C0847A": "Apple", "C0A53E": "Apple",
+    "C0CECD": "Apple", "C42C03": "Apple", "C4B301": "Apple",
+    "C81EE7": "Apple", "C82A14": "Apple", "C8334B": "Apple",
+    "C869CD": "Apple", "C88550": "Apple", "C8B5B7": "Apple",
+    "C8BC20": "Apple", "CC08E0": "Apple", "CC29F5": "Apple",
+    "CC4463": "Apple", "CC785F": "Apple", "D023DB": "Apple",
+    "D02598": "Apple", "D03311": "Apple", "D0E140": "Apple",
+    "D49A20": "Apple", "D4F46F": "Apple", "D8004D": "Apple",
+    "D83062": "Apple", "D8A25E": "Apple", "D8BB2C": "Apple",
+    "D8CF9C": "Apple", "D8D1CB": "Apple", "DC2B2A": "Apple",
+    "DC3714": "Apple", "DC86D8": "Apple", "DCA904": "Apple",
+    "DCE2AC": "Apple", "E05F45": "Apple", "E0B52D": "Apple",
+    "E0B9BA": "Apple", "E0C767": "Apple", "E0F5C6": "Apple",
+    "E425E7": "Apple", "E48B7F": "Apple", "E4C63D": "Apple",
+    "E4CE8F": "Apple", "E4E4AB": "Apple", "E8040B": "Apple",
+    "E80688": "Apple", "E8802E": "Apple", "E8B2AC": "Apple",
+    "E8FBE9": "Apple", "EC3586": "Apple", "EC852F": "Apple",
+    "F01898": "Apple", "F02475": "Apple", "F0766F": "Apple",
+    "F0B479": "Apple", "F0C1F1": "Apple", "F0D1A9": "Apple",
+    "F0DBF8": "Apple", "F0F61C": "Apple", "F437B7": "Apple",
+    "F45C89": "Apple", "F4F15A": "Apple", "F4F5D8": "Apple",
+    "F81EDF": "Apple", "F86214": "Apple", "F8FFC2": "Apple",
+    "FC253F": "Apple", "FCE998": "Apple", "FCFC48": "Apple",
+    "F0EE10": "Apple", "F490CA": "Apple", "F0B0E7": "Apple",
+}

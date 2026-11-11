@@ -1,0 +1,5 @@
+* text=auto
+# Windows komut dosyaları CRLF ile kalmalı; aksi halde cmd.exe etiketleri yanlış okuyabilir
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.png binary
