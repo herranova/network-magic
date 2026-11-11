@@ -10,7 +10,7 @@ Hesap, abonelik, reklam veya telemetri yoktur; verileriniz bilgisayarınızdan �
 
 ## Hızlı başlangıç
 
-1. **[Network Magic'i indirin (ZIP)](https://github.com/herranova/network-magic/releases/latest/download/NetworkMagic.zip)** ve bir klasöre çıkarın.
+1. **[Network Magic'i indirin (ZIP)](https://github.com/herranova/network-magic/archive/refs/heads/main.zip)** ve bir klasöre çıkarın.
 2. **`Kur.cmd`** dosyasına çift tıklayın.
 
 `Kur.cmd` Python 3.10+ yoksa `winget` ile kurar, proje klasöründe yalıtılmış bir Python ortamı (`.venv`) oluşturur, gerekli paketleri yükler ve uygulamayı tarayıcıda açar. Sonraki açılışlarda `run.bat` yeterlidir. Windows 10/11 gerekir.
