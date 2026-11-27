@@ -10,10 +10,19 @@ Hesap, abonelik, reklam veya telemetri yoktur; verileriniz bilgisayarınızdan �
 
 ## Hızlı başlangıç
 
+### Kolay yol: hazır .exe (Python gerekmez)
+
+1. **[Son sürümün sayfasından](https://github.com/herranova/network-magic/releases/latest)** `NetworkMagic.exe` dosyasını indirin.
+2. Çift tıklayın, yönetici izni sorulursa **Evet** deyin. Tarayıcı kendiliğinden açılır.
+
+Veriler `%LOCALAPPDATA%\Network Magic` klasöründe tutulur; exe'yi istediğiniz yere taşıyabilirsiniz. Windows SmartScreen "tanınmayan uygulama" uyarısı verirse **Ek bilgi → Yine de çalıştır** seçin (exe dijital olarak imzalı değildir).
+
+### Kaynak koddan
+
 1. **[Network Magic'i indirin (ZIP)](https://github.com/herranova/network-magic/archive/refs/heads/main.zip)** ve bir klasöre çıkarın.
 2. **`Kur.cmd`** dosyasına çift tıklayın.
 
-`Kur.cmd` Python 3.10+ yoksa `winget` ile kurar, proje klasöründe yalıtılmış bir Python ortamı (`.venv`) oluşturur, gerekli paketleri yükler ve uygulamayı tarayıcıda açar. Sonraki açılışlarda `run.bat` yeterlidir. Windows 10/11 gerekir.
+`Kur.cmd` Python 3.10+ yoksa `winget` ile kurar, proje klasöründe yalıtılmış bir Python ortamı (`.venv`) oluşturur, gerekli paketleri yükler (bağlantı hatalarında 3 kez dener) ve uygulamayı tarayıcıda açar. Sonraki açılışlarda `run.bat` yeterlidir; kurulum yarım kaldıysa `run.bat` kendisi `Kur.cmd`'yi çalıştırır. Windows 10/11 gerekir.
 
 > Network Magic'i yalnızca kendi ağınızda veya yönetmeye yetkili olduğunuz ağlarda kullanın. Uygulama ağdaki cihazlara ping atar ve yaygın portları yoklar.
 
@@ -103,7 +112,7 @@ Uygulama tarayıcıyı otomatik olarak `http://127.0.0.1:8765` adresinde açar. 
 | `NETMAGIC_PORT` | `8765` | HTTP portu |
 | `NETMAGIC_HOST` | `0.0.0.0` | Dinlenen adres (`127.0.0.1` yaparak LAN erişimini kapatabilirsiniz) |
 | `NETMAGIC_NO_BROWSER` | — | `1` ise tarayıcı otomatik açılmaz |
-| `NETMAGIC_DATA` | `./data` | Veritabanı, paylaşılan dosyalar ve OUI dosyasının klasörü |
+| `NETMAGIC_DATA` | `./data` (exe'de `%LOCALAPPDATA%\Network Magic`) | Veritabanı, paylaşılan dosyalar ve OUI dosyasının klasörü |
 | `NETMAGIC_ALLOWED_HOSTS` | — | Arayüze IP yerine özel bir adla (ör. `evpc.lan`) erişecekseniz, virgülle ayrılmış izinli adlar |
 
 ## Kullanım akışı
@@ -173,7 +182,10 @@ network-magic/
 ├─ app.py                 # Flask rotaları, tarama durumu, başlatma
 ├─ Kur.cmd                # Tek tıkla kurulum (Python + paketler) ve başlatma
 ├─ run.bat                # Windows başlatıcı (UAC ile yönetici)
+├─ build.cmd              # NetworkMagic.exe üretir (PyInstaller)
+├─ NetworkMagic.spec      # PyInstaller tarifi
 ├─ requirements.txt
+├─ requirements-build.txt # Yalnızca build için: PyInstaller, Pillow
 ├─ LICENSE
 ├─ netmagic/
 │  ├─ config.py           # Sabitler, portlar, cihaz türleri, yedek OUI
@@ -231,11 +243,22 @@ python -m unittest discover -s tests -v
 
 Testler geçici bir veritabanı kullanır; gerçek Network Magic verilerinize dokunmaz. MAC normalizasyonu, alt ağ hesaplama, cihaz türü tahmini, dosya adı güvenliği, mDNS isim ayrıştırma, veritabanı işlemleri ve istek güvenliğini (CSRF, Host doğrulama, misafir anahtarı) kapsar.
 
+## .exe oluşturma
+
+```bat
+Kur.cmd      :: ilk kez: .venv ve paketler
+build.cmd    :: testleri çalıştırır, dist\NetworkMagic.exe üretir
+```
+
+Tek dosyalık exe `templates/` ve `static/` klasörlerini içinde taşır, açılışta yönetici izni ister ve konsol penceresinde adresi gösterir.
+
 ## Sorun giderme
 
 | Sorun | Çözüm |
 | --- | --- |
-| `Port 8765 kullanımda` | `NETMAGIC_PORT=8766` ile çalıştırın veya portu kullanan uygulamayı kapatın. |
+| `Kur.cmd` paket indirirken hata veriyor | Betik 3 kez dener. Yine olmuyorsa VPN/proxy/antivirüs `pypi.org`'u engelliyor olabilir; Python gerektirmeyen `NetworkMagic.exe`'yi kullanın. |
+| Pencere açılıp hemen kapanıyor | `run.bat` artık hata olursa pencereyi açık tutar; mesajı okuyup iletin. Kurulum yarım kaldıysa `Kur.cmd`'yi yeniden çalıştırın (bozuk `.venv`'i kendisi yeniler). |
+| `zaten çalışıyor ya da 8765 portu başka bir uygulamada` | Network Magic zaten açıktır; tarayıcıda mevcut pencere açılır. Başka bir uygulama portu kullanıyorsa `NETMAGIC_PORT=8766` ile çalıştırın. |
 | Cihazlar bulunamıyor | Windows Güvenlik Duvarı ICMP'yi engelliyor olabilir; yönetici olarak çalıştırın. Alt ağı **Ayarlar → Alt ağ** alanına elle girin (ör. `192.168.1.0/24`). |
 | Wi-Fi ağları görünmüyor | Windows, `netsh wlan` komutları için konum izni ister. **Ayarlar → Gizlilik ve güvenlik → Konum** iznini açın. Bağlı SSID yine de profil bilgisinden gösterilir. |
 | Engelleme çalışmıyor | Yönetici olarak çalıştırın. Kural IP bazlıdır ve cihazın yönlendirici internetini kesmez; yalnızca bu bilgisayarla iletişimini engeller. Cihazın IP'si değiştiyse yeniden tarayın. |

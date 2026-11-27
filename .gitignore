@@ -5,6 +5,10 @@ __pycache__/
 venv/
 .pytest_cache/
 
+# PyInstaller çıktıları (build.cmd)
+build/
+dist/
+
 # Çalışma zamanı verisi: cihaz envanteri, paylaşılan dosyalar, OUI dosyası.
 # Kişisel ağ bilgisi içerir; depoya asla girmemeli.
 data/

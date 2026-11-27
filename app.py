@@ -6,6 +6,7 @@ import io
 import ipaddress
 import os
 import socket
+import sys
 import threading
 import webbrowser
 from datetime import datetime, timedelta, timezone
@@ -23,7 +24,12 @@ from flask import (
 
 from netmagic import actions, config, db, discovery, monitor as monitor_mod, netinfo
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
+app = Flask(
+    __name__,
+    root_path=str(config.RESOURCE_DIR),
+    static_folder=str(config.RESOURCE_DIR / "static"),
+    template_folder=str(config.RESOURCE_DIR / "templates"),
+)
 app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024 * 1024
 app.json.ensure_ascii = False
 app.json.sort_keys = False
@@ -1090,13 +1096,39 @@ def server_error(error):
     return "Sunucu hatası", 500
 
 
+def _port_in_use(port: int) -> bool:
+    """Port başka bir süreç (genelde zaten açık bir Network Magic) tarafından dinleniyor mu?"""
+    try:
+        with socket.create_connection(("127.0.0.1", port), timeout=0.5):
+            return True
+    except OSError:
+        return False
+
+
+def _configure_console() -> None:
+    # Eski Windows konsollarında / yönlendirilmiş çıktıda Türkçe karakterler bozulmasın.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError, OSError):
+            pass
+
+
 def main() -> None:
     global SERVER_PORT
+    _configure_console()
     port = int(os.environ.get("NETMAGIC_PORT", str(config.DEFAULT_PORT)))
     SERVER_PORT = port
+    url = f"http://127.0.0.1:{port}"
+    if _port_in_use(port):
+        print(f"{config.APP_NAME} zaten çalışıyor ya da {port} portu başka bir uygulamada.")
+        print(f"Tarayıcıda açılıyor: {url}")
+        print(f"Farklı port için: set NETMAGIC_PORT={port + 1}")
+        if os.environ.get("NETMAGIC_NO_BROWSER") != "1":
+            webbrowser.open(url)
+        return
     app._started_at = db.iso()
     monitor.start()
-    url = f"http://127.0.0.1:{port}"
     lan = netinfo.lan_url(port)
     print("=" * 62)
     print(f"  {config.APP_NAME} {config.APP_VERSION} - {config.APP_TAGLINE}")
@@ -1114,4 +1146,20 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    if config.FROZEN:
+        # .exe çift tıklamayla açıldığında hata olursa pencere hemen kapanmasın.
+        try:
+            main()
+        except KeyboardInterrupt:
+            pass
+        except Exception:
+            import traceback
+
+            traceback.print_exc()
+            print("\n[HATA] Network Magic beklenmedik şekilde kapandı. Bu metni geliştiriciye iletin.")
+            try:
+                input("Kapatmak için Enter'a basın...")
+            except EOFError:
+                pass
+    else:
+        main()

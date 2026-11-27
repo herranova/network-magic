@@ -1,35 +1,34 @@
 @echo off
+setlocal EnableExtensions
 chcp 65001 >nul
 title Network Magic
 cd /d "%~dp0"
 
-where python >nul 2>nul
-if errorlevel 1 if not exist ".venv\Scripts\python.exe" (
-  echo [HATA] Python bulunamadi. https://www.python.org/downloads/ adresinden Python 3.10+ kurun.
-  pause
-  exit /b 1
-)
+set "VPY=%~dp0.venv\Scripts\python.exe"
 
-set "PYTHON_EXE=python"
-if exist ".venv\Scripts\python.exe" set "PYTHON_EXE=%CD%\.venv\Scripts\python.exe"
+rem Kurulum eksik ya da yarim kaldiysa once Kur.cmd calissin.
+if not exist "%VPY%" goto :need_setup
+"%VPY%" -c "import flask, psutil, qrcode" >nul 2>nul
+if errorlevel 1 goto :need_setup
 
-"%PYTHON_EXE%" -c "import flask, psutil, qrcode" >nul 2>nul
-if errorlevel 1 (
-  echo Gerekli paketler kuruluyor...
-  "%PYTHON_EXE%" -m pip install -r requirements.txt
-  if errorlevel 1 (
-    echo [HATA] Paketler kurulamadi.
-    pause
-    exit /b 1
-  )
-)
-
+rem Yonetici degilsek bu dosyayi UAC ile yeniden ac; reddedilirse sinirli modda devam et.
 net session >nul 2>nul
-if errorlevel 1 (
-  echo Yonetici haklari isteniyor ^(cihaz engelleme ve onarim araclari icin^)...
-  powershell -NoProfile -Command "Start-Process -FilePath '%PYTHON_EXE%' -ArgumentList 'app.py' -WorkingDirectory '%CD%' -Verb RunAs"
-  exit /b 0
-)
+if not errorlevel 1 goto :run
+echo Yonetici haklari isteniyor - cihaz engelleme ve onarim araclari icin...
+powershell -NoProfile -Command "try { Start-Process -FilePath '%~f0' -Verb RunAs -ErrorAction Stop } catch { exit 1 }"
+if not errorlevel 1 exit /b 0
+echo [UYARI] Yonetici izni verilmedi. Uygulama sinirli modda baslatiliyor...
 
-"%PYTHON_EXE%" app.py
-if errorlevel 1 pause
+:run
+"%VPY%" app.py
+if errorlevel 1 (
+  echo.
+  echo [HATA] Network Magic beklenmedik sekilde kapandi. Yukaridaki mesaji gelistiriciye iletin.
+  pause
+)
+exit /b
+
+:need_setup
+echo [BILGI] Kurulum eksik. Kur.cmd calistiriliyor...
+call "%~dp0Kur.cmd"
+exit /b

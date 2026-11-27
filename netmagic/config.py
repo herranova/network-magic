@@ -2,14 +2,30 @@
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 
 APP_NAME = "Network Magic"
-APP_VERSION = "1.3.2"
+APP_VERSION = "1.3.3"
 APP_TAGLINE = "Ağınızın büyüsü"
 
+# PyInstaller ile paketlenmiş .exe içinde mi çalışıyoruz?
+FROZEN = bool(getattr(sys, "frozen", False))
+
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = Path(os.environ.get("NETMAGIC_DATA", BASE_DIR / "data"))
+# templates/ ve static/ klasörlerinin bulunduğu yer (.exe'de geçici açma klasörü)
+RESOURCE_DIR = Path(getattr(sys, "_MEIPASS", BASE_DIR))
+
+
+def _default_data_dir() -> Path:
+    if FROZEN:
+        # .exe her açılışta geçici klasöre açılır; kalıcı veri kullanıcı profilinde tutulur.
+        local = os.environ.get("LOCALAPPDATA") or str(Path.home() / "AppData" / "Local")
+        return Path(local) / "Network Magic"
+    return BASE_DIR / "data"
+
+
+DATA_DIR = Path(os.environ.get("NETMAGIC_DATA") or _default_data_dir())
 SHARE_DIR = DATA_DIR / "share"
 DB_PATH = DATA_DIR / "netmagic.db"
 OUI_FILES = [DATA_DIR / "manuf", DATA_DIR / "oui.csv"]
